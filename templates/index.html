@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Subreddit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/superhero/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+  <link rel="stylesheet" href="../static/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.9.1/d3-tip.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+  <div class="wrapper">
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index.html">Detoxify</a>
+          <a class="navbar-brand" href="index.html">Total {{filter_text}} Comments: {{comment_length}} </a>
+        </div>
+      </div>
+    </nav>
+    <div class="hero text-center">
+      <h1>Subreddit Toxicity Analysis</h1>
+      <p></p>
+    </div>
+    <div class="container">
+      <div class="row margin-top-50">
+        <div class="col-md-2">
+          <aside class="filters">
+            <div class="panel panel-default">
+              <div class="panel-heading">Filter Search</div>
+              <div class="panel-body">
+                  <form action="{{url_for('scrape')}}" method="post">
+                      <div class="form-group">
+                        <ul class="list-group" id="filter1">
+                          <li class="filter list-group-item">
+                            <label for="subreddit">Subreddit</label>
+                            <input type="text" class="form-control" id="subreddit" placeholder="" name="subreddit-scrape">
+                          </li>
+                        </ul>
+                      </div>
+                      <button id="filter-btn" type="submit" class="btn btn-default">Submit</button>
+                    </form>
+                    <form action="{{url_for('home')}}" method="post">
+                      <div class="form-group">
+                          <ul class="list-group" id="filter2">
+                            <li class="filter list-group-item">
+                              <label for="topic">Toxic Topic</label>
+                              <select id="topic" name="toxic-filter">
+                                <option value="">All</option>
+                                <option value="Toxic">Toxic</option>
+                                <option value="Severe Toxic">Severe Toxic</option>
+                                <option value="Obscene">Obscene</option>
+                                <option value="Threat">Threat</option>
+                                <option value="Insult">Insult</option>
+                                <option value="Identity Hate">Identity Hate</option>
+                              </select>
+                            </li>
+                          </ul>
+                        </div>
+                        <button id="filter-btn" type="submit" class="btn btn-default">Submit</button>
+                      </form>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <div class="col-md-9">
+          <div id="table-area" class="">
+            <table id="subreddit-table" class="table table-striped">
+              <thead>
+                <tr style="font-size: 1.1em">
+                  <th class="table-head">Date</th>
+                  <th class="table-head">Username</th>
+                  <th class="table-head">Score</th>
+                  <th class="table-head" width="20%">Comments</th>
+                  <th class="table-head">Title</th>
+                  <th class="table-head" width="10%">Probability</th>
+                  <th class="table-head">Sentiment</th>
+                </tr>
+              </thead>
+                <tbody>
+                {% for data in reddit_data %}
+                  <tr style="font-size: 1.1em">
+                    <td>{{data.Date}}</td>
+                    <td>{{data.Username}}</td>
+                    <td>{{data.Score}}</td>
+                    <td>{{data.Comment}}</td>
+                    <td>{{data["Submission Title"]}}</td>
+                    <td class = "probability">{{data[parameter + " Probability"]}}</td>
+                    <td class = "sentiment">{{data.Sentiment}}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-1"></div>
+      </div>
+    </div>
+    <div class = "row">
+        <div class = col-md-2></div>
+        <div class = "col-md-8">
+            <div id="myDiv"></div>
+            <div id="scatterplotDiv"></div>
+        </div>
+        <div class = col-md-2></div>
+      </div>
+    <footer class="footer">
+      <span class="bottom">Subreddit</span>
+    </footer>
+  </div>
+  <script type = "text/javascript">
+    // API key
+  const API_KEY = "pk.eyJ1IjoibHJheW5lcyIsImEiOiJjamt1Z29mNWkwNHprM3NxMmxpbzMwcjg4In0.9AyDbhEwMh3kAJsRiN3I-Q";
+  console.log(API_KEY)
+  </script>
+  <script type = "text/javascript">
+    var x = [];
+    var y = [];
+    var sentiment = document.getElementsByClassName("sentiment")
+    var probability = document.getElementsByClassName("probability")
+    for (var i = 0; i < sentiment.length; i ++) {
+      x.push(sentiment[i].innerHTML)
+    }
+  
+      for (var i = 0; i < probability.length; i ++) {
+      y.push(probability[i].innerHTML)
+    }
+    console.log(x)
+    console.log(y)
+  
+    // Histogram
+    var trace = {
+        x: x,
+        type: 'histogram',
+      };
+    var data = [trace];
+    var layout = {
+      title: "Distribution of Comment Sentiment",
+      showlegend: false
+    }
+    Plotly.newPlot('myDiv', data, layout);
+  
+  // Scatterplot
+    var trace1 = {
+    x: x,
+    y: y,
+    mode: 'markers',
+    type: 'scatter',
+    marker: { size: 12 }
+  };
+  
+  
+  var scatterdata = [ trace1 ];
+  
+  var scatterlayout = {
+    xaxis: {
+      range: [ -1.1, 1.1 ],
+      title: "Sentiment"
+    },
+    yaxis: {
+      range: [0, 1.15],
+      title: "Probability"
+    },
+    title:'Sentiment vs. Probability'
+  };
+  
+  Plotly.newPlot('scatterplotDiv', scatterdata, scatterlayout);
+    </script>
+  <!-- <script type="text/javascript" src="static/js/config.js"></script>
+  <script type="text/javascript" src="static/js/histogram.js"></script> -->
+</body>
+</html>
