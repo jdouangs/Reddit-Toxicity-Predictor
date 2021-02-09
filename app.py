@@ -4,7 +4,7 @@ import reddit_scrape
 from flask import Flask, render_template, jsonify, request, redirect
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = 'mongodb://jdouangs:spunky33@ds125453.mlab.com:25453/redditanalysis'
+app.config["MONGO_URI"] = 'mongodb://@ds125453.mlab.com:25453/redditanalysis'
 mongo = PyMongo(app)
 
 @app.route("/home", methods = ['GET', 'POST'])
